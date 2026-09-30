@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark light">
+<title>Tatar Flow</title>
+<meta name="description" content="Tatar Flow — нийлмэл web/API системийн HTTP трафикийг бизнес функц, төлөв, актор, объектын семантик загвар болгож, pentester-т test context ба coverage-ийг удирддаг workspace-ийн дизайн ноорог.">
+<script>try{var t=localStorage.getItem('tatar-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:dark light;
+    --bg:#0e1016;--bg2:#151922;--card:#1a1f2b;--card2:#202634;
+    --border:#2a3140;--border2:#3a4356;--tx:#e7ebf3;--tx2:#aeb7c7;--tx3:#7a8496;
+    --acc:#22b8a6;--acc2:#3ad6c2;--acc-bg:#0f2e2b;
+    --in:#5b8cff;--in-bg:#182444;--eng:#8b7cff;--eng-bg:#241f3d;--out:#4ade80;--out-bg:#122e1c;
+    --warn:#ff9d42;--warn-bg:#33260f;
+    --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;--sans:'Golos Text','Rubik',system-ui,sans-serif;--head:'Rubik','Golos Text',system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+    --bg:#f5f7fa;--bg2:#fff;--card:#fff;--card2:#f5f8fc;--border:#e4e8f0;--border2:#ccd4e2;
+    --tx:#14181f;--tx2:#475164;--tx3:#788299;
+    --acc:#0d9488;--acc2:#14b8a6;--acc-bg:#e0f5f2;
+    --in:#2563eb;--in-bg:#e7eefc;--eng:#6b4dff;--eng-bg:#efeaff;--out:#16a34a;--out-bg:#e4f7ea;
+    --warn:#b45309;--warn-bg:#fdf1e0;
+  }}
+  :root[data-theme="light"]{
+    --bg:#f5f7fa;--bg2:#fff;--card:#fff;--card2:#f5f8fc;--border:#e4e8f0;--border2:#ccd4e2;
+    --tx:#14181f;--tx2:#475164;--tx3:#788299;
+    --acc:#0d9488;--acc2:#14b8a6;--acc-bg:#e0f5f2;
+    --in:#2563eb;--in-bg:#e7eefc;--eng:#6b4dff;--eng-bg:#efeaff;--out:#16a34a;--out-bg:#e4f7ea;
+    --warn:#b45309;--warn-bg:#fdf1e0;
+  }
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);line-height:1.62;font-size:16px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:0 16px 90px}
+  header{padding:46px 0 26px;border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .logo{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;color:#04211d;font-size:18px}
+  .kick{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin:0}
+  h1{font-family:var(--head);font-size:clamp(28px,5.2vw,42px);line-height:1.12;margin:0 0 12px;font-weight:700;letter-spacing:-.02em}
+  .sub{color:var(--tx2);font-size:18px;max-width:68ch;margin:0}
+  .meta{margin-top:16px;font-family:var(--mono);font-size:12px;color:var(--tx3)}
+  .toc{position:sticky;top:0;z-index:5;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;background:var(--bg);border-bottom:1px solid var(--border);padding:9px 52px 9px 0;margin-bottom:6px}
+  .toc::-webkit-scrollbar{display:none}
+  .toc a{flex:0 0 auto;font-family:var(--mono);font-size:11.5px;color:var(--tx3);text-decoration:none;padding:5px 9px;border-radius:7px;white-space:nowrap}
+  .toc a:hover{color:var(--tx);background:var(--card)}
+  .toc a:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+  h2{font-family:var(--head);font-size:clamp(20px,3.4vw,26px);margin:50px 0 8px;font-weight:600;letter-spacing:-.01em;scroll-margin-top:56px}
+  h2 .n{font-family:var(--mono);font-size:14px;color:var(--acc);margin-right:10px}
+  h3{font-family:var(--head);font-size:16px;margin:20px 0 6px;font-weight:600}
+  p{margin:0 0 14px}.lead{color:var(--tx2);max-width:75ch}
+  a{color:var(--acc)}
+  .oneliner{background:var(--acc-bg);border:1px solid var(--acc);border-radius:14px;padding:20px 22px;margin:20px 0;font-size:17px}
+  .oneliner b{color:var(--acc)}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+  @media(max-width:720px){.cols{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+  .card h3{margin-top:0}.card p{font-size:14.5px;color:var(--tx2);margin:0}
+  .pain{border-left:3px solid var(--tx3)}.win{border-left:3px solid var(--out)}.no{border-left:3px solid var(--warn)}
+  figure{margin:22px 0;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  figure:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  figure svg{display:block;min-width:680px;width:100%;height:auto}
+  figcaption{color:var(--tx3);font-size:12.5px;text-align:center;margin-top:8px;font-family:var(--mono)}
+  @media(max-width:720px){figcaption::before{content:"← гүйлгэж хараарай →";display:block;color:var(--tx3);margin-bottom:4px}}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{text-align:left;padding:10px 11px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{font-family:var(--head);font-size:12px;letter-spacing:.03em;text-transform:uppercase;color:var(--tx3);font-weight:600;background:var(--card2)}
+  td b{color:var(--tx)}
+  .tag{display:inline-block;font-family:var(--mono);font-size:10.5px;padding:2px 7px;border-radius:5px;font-weight:500}
+  .t1{background:var(--acc-bg);color:var(--acc)}.t2{background:var(--in-bg);color:var(--in)}.t3{background:var(--eng-bg);color:var(--eng)}
+  pre{background:#0a0d13;border:1px solid var(--border2);border-radius:10px;padding:15px;overflow-x:auto;margin:8px 0 14px;font-family:var(--mono);font-size:12.5px;line-height:1.65;color:#d7deea}
+  pre .c{color:#6b7689}pre .k{color:#7dd3fc}pre .s{color:#a5e88a}pre .v{color:#ffc96b}
+  code:not(pre code){font-family:var(--mono);font-size:.86em;background:var(--card2);border:1px solid var(--border);padding:1px 6px;border-radius:5px}
+  ol.mvp{counter-reset:m;list-style:none;padding:0;margin:12px 0}
+  ol.mvp li{position:relative;padding:9px 0 9px 40px;border-top:1px solid var(--border);color:var(--tx2);font-size:14.5px}
+  ol.mvp li:first-child{border-top:none}
+  ol.mvp li::before{counter-increment:m;content:counter(m);position:absolute;left:0;top:8px;width:26px;height:26px;border-radius:7px;background:var(--card);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;color:var(--acc);font-size:13px}
+  .road{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:16px 0}
+  @media(max-width:720px){.road{grid-template-columns:1fr 1fr}}
+  .ph{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:13px}
+  .ph .t{font-family:var(--mono);font-size:11px;color:var(--acc);letter-spacing:.05em}
+  .ph .h{font-weight:600;font-size:14px;margin:4px 0}.ph p{font-size:12.5px;color:var(--tx3);margin:0}
+  .themebtn{position:fixed;top:14px;right:14px;z-index:10;background:var(--card);border:1px solid var(--border2);color:var(--tx2);border-radius:9px;width:38px;height:38px;cursor:pointer;font-size:16px}
+  .themebtn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--tx3);font-size:13px}
+  .muted{color:var(--tx3);font-size:13px}
+  .callout{background:var(--warn-bg);border:1px solid var(--warn);border-radius:12px;padding:16px 20px;margin:18px 0}
+  .callout b{color:var(--warn)}
+  @media print{
+    :root,:root[data-theme="dark"]{--bg:#fff;--bg2:#fff;--card:#fff;--card2:#f4f5f7;
+      --border:#c8ccd4;--border2:#aab2c0;--tx:#000;--tx2:#333;--tx3:#555}
+    body{background:#fff;color:#000;font-size:11pt}
+    .themebtn,.toc{display:none!important}
+    pre{background:#f4f5f7;color:#111;border-color:#c8ccd4;white-space:pre-wrap;
+        -webkit-print-color-adjust:exact;print-color-adjust:exact}
+    pre .c{color:#555}pre .k{color:#0b4f8a}pre .s{color:#1d6b2a}pre .v{color:#8a5a00}
+    figure{overflow:visible;border-color:#c8ccd4;break-inside:avoid}
+    figure svg{min-width:0}
+    figcaption::before{content:""!important}
+    h2{break-after:avoid}
+    table,.card,.ph,.oneliner,.callout{break-inside:avoid}
+    @page{margin:16mm}
+  }
+</style>
+</head>
+<body>
+<button type="button" class="themebtn" id="tt" aria-pressed="false" aria-label="Гэрэл/Бараан сэлгэх"><span aria-hidden="true">◐</span></button>
+<div class="wrap">
+<header>
+  <div class="brand"><div class="logo">TF</div><p class="kick">Tatar Flow · дизайн ноорог</p></div>
+  <h1>HTTP request-үүдийг бизнес функцийн загвар болгож хувиргана</h1>
+  <p class="sub">Банкны дижитал сувгийн олон микросервист систем дээр Burp зөвхөн салангид request хардаг. Tatar Flow эдгээрийг функц + төлөв + актор + объектын семантик загвар болгож, тестийн контекст ба хамралтыг нэг workspace-ээс удирдана.</p>
+  <p class="meta">PSSA · Tatar экосистем · зорилтот хэрэглэгч: web/API pentester · 2026-09-24</p>
+</header>
+
+<nav class="toc" aria-label="Хэсгүүд">
+  <a href="#problem">01 Асуудал</a>
+  <a href="#solution">02 Шийдэл</a>
+  <a href="#differentiator">03 Юу нь БИШ</a>
+  <a href="#dataflow">04 Дата урсгал</a>
+  <a href="#model">05 Загвар</a>
+  <a href="#mutations">06 Mutation</a>
+  <a href="#output">07 Гаралт</a>
+  <a href="#mvp">08 MVP</a>
+  <a href="#roadmap">09 Замын зураг</a>
+  <a href="#ecosystem">10 Экосистем</a>
+</nav>
+
+<main>
+<h2 id="problem"><span class="n">01</span>Асуудал</h2>
+<p class="lead">Дижитал банк = нэг вэб биш, 40+ микросервисийн нийлбэр. <code>/api/transfer</code> цаанаа limit-check, fee-calc, risk-engine, ledger рүү задарна. Burp үүнийг ойлгодоггүй — бүх мэдлэг тестерийн толгойд байдаг.</p>
+<div class="cols">
+  <div class="card pain"><h3>Функц харагдахгүй</h3><p>Site map зөвхөн URL/method. “Энэ request яг ямар бизнес функц вэ” тодорхойгүй.</p></div>
+  <div class="card pain"><h3>Утгын гарал үл мэдэгдэх</h3><p><code>txnId, sessionRef</code> хаанаас ирдэг вэ — өмнөх response-оос гараар ухаж, copy-paste хийнэ.</p></div>
+  <div class="card pain"><h3>Төлөв/дараалал</h3><p>init → OTP → confirm гэсэн олон алхмыг гараар барьж, алгасах/давхарлах тестийг санаж хийнэ.</p></div>
+  <div class="card pain"><h3>Актор × объект</h3><p>User A-гийн токеноор User B-ийн объектыг оролдох (BOLA/IDOR)-ыг зохион байгуулалтгүй, санамсаргүй хийдэг.</p></div>
+</div>
+<p class="muted">Үр дүнд нь: <code>productCode=LOAN→SAVING</code>, <code>channel=MOBILE</code>, <code>amount=-100</code> гэж гараар сольж сольж — 3 өдөр.</p>
+
+<h2 id="solution"><span class="n">02</span>Шийдэл — нэг өгүүлбэрээр</h2>
+<div class="oneliner">Tatar Flow бол нийлмэл системийн API трафикийг <b>бизнес функц + төлөв + актор + объект + хувьсагч</b> гэсэн семантик загвар болгож, pentester-т <b>контекстээр дүүргэгдсэн request, business-logic mutation-ууд, хамралтын хяналтыг</b> нэг workspace-ээс өгдөг state-aware туршилтын орчин.</div>
+
+<h2 id="differentiator"><span class="n">03</span>Юу нь БИШ, юугаараа ялгарах вэ</h2>
+<p class="lead">Шударгаар: “API импортлоод request үүсгэх” нь аль хэдийн шийдэгдсэн (доор prior art). Tatar Flow-ийн шинэлэг тал өөр давхаргад байна.</p>
+<div class="cols">
+  <div class="card no"><h3>Энэ БИШ (commodity)</h3><p>OpenAPI/Postman импортлоод endpoint-ээс request үүсгэх. Үүнийг OpenAPI Parser, SpecOps, Burp API scan аль хэдийн хийдэг.</p></div>
+  <div class="card win"><h3>Харин ЭНЭ (шаантаг)</h3><p>Трафикийг <b>бизнес функцийн семантик загвар</b> болгож, төлөв/актор/объектыг ойлгон, тестерт <b>test context + coverage</b> удирдуулах.</p></div>
+</div>
+<h3>Prior art (хэсэгчилсэн, давхардуулахгүйн тулд)</h3>
+<table>
+  <thead><tr><th>Одоо байгаа</th><th>Юу хийдэг</th><th>Дутуу тал</th></tr></thead>
+  <tbody>
+    <tr><td>OpenAPI Parser / SpecOps</td><td>Spec-ээс request workbench</td><td>Endpoint-төвтэй, бизнес функц/төлөв алга</td></tr>
+    <tr><td>PortSwigger Logic Mapper</td><td>Workflow-г визуалчлах</td><td>Голдуу зураглал, context binding сул</td></tr>
+    <tr><td>WorkflowGuard</td><td>State-aware replay/mutation</td><td>Функц/актор/объектын загвар байхгүй</td></tr>
+    <tr><td>Autorize / AuthMatrix</td><td>Authz/IDOR дахин тоглуулах</td><td>Зөвхөн эрхийн нэг асуудал</td></tr>
+    <tr><td>Akto</td><td>API business-logic template</td><td>Defensive/CI-төвтэй, оператор workspace биш</td></tr>
+  </tbody>
+</table>
+<p class="muted">Ялгарах шаантаг = <b>функц + төлөв + актор + объект + хувьсагч</b>-ийг НЭГ семантик загварт нэгтгээд, coverage удирддаг оператор workspace. Дээр нь офлайн Ollama, Монгол хэл, Tatar экосистем.</p>
+
+<h2 id="dataflow"><span class="n">04</span>Дата урсгал</h2>
+<figure tabindex="0" role="region" aria-labelledby="fig-dataflow">
+<svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg" font-family="'Golos Text',sans-serif">
+  <defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7a8496"/></marker></defs>
+  <rect x="20" y="66" width="140" height="80" rx="12" fill="var(--in-bg)" stroke="var(--in)"/>
+  <text x="90" y="96" text-anchor="middle" fill="var(--tx)" font-size="13.5" font-weight="700">Трафик</text>
+  <text x="90" y="116" text-anchor="middle" fill="var(--tx3)" font-size="10.5">Burp history / HAR</text>
+  <text x="90" y="131" text-anchor="middle" fill="var(--tx3)" font-size="10.5">(+OpenAPI сонголт)</text>
+
+  <rect x="192" y="34" width="270" height="176" rx="14" fill="var(--eng-bg)" stroke="var(--eng)" stroke-width="1.6"/>
+  <text x="327" y="58" text-anchor="middle" fill="var(--eng)" font-size="12" font-family="'JetBrains Mono',monospace" letter-spacing="1">TATAR FLOW ENGINE</text>
+  <text x="327" y="84" text-anchor="middle" fill="var(--tx)" font-size="12.5">① Функцийн бүртгэл (registry)</text>
+  <text x="327" y="106" text-anchor="middle" fill="var(--tx)" font-size="12.5">② Контекст сан (variables)</text>
+  <text x="327" y="128" text-anchor="middle" fill="var(--tx)" font-size="12.5">③ Төлөвийн машин (state)</text>
+  <text x="327" y="150" text-anchor="middle" fill="var(--tx)" font-size="12.5">④ Актор × Объект матриц</text>
+  <text x="327" y="172" text-anchor="middle" fill="var(--tx)" font-size="12.5">⑤ Mutation үүсгэгч</text>
+  <text x="327" y="194" text-anchor="middle" fill="var(--tx3)" font-size="10.5">Reasoner: Ollama (санал болгох)</text>
+
+  <rect x="500" y="46" width="180" height="72" rx="11" fill="var(--out-bg)" stroke="var(--out)"/>
+  <text x="590" y="72" text-anchor="middle" fill="var(--tx)" font-size="12.5" font-weight="700">Контекстээр</text>
+  <text x="590" y="90" text-anchor="middle" fill="var(--tx)" font-size="12.5" font-weight="700">дүүрсэн request</text>
+  <text x="590" y="107" text-anchor="middle" fill="var(--tx3)" font-size="10">valid, бэлэн</text>
+  <rect x="500" y="126" width="180" height="60" rx="11" fill="var(--out-bg)" stroke="var(--out)"/>
+  <text x="590" y="150" text-anchor="middle" fill="var(--tx)" font-size="12.5" font-weight="700">Mutation матриц</text>
+  <text x="590" y="168" text-anchor="middle" fill="var(--tx3)" font-size="10">actor/object/step swap</text>
+  <rect x="500" y="194" width="180" height="52" rx="11" fill="var(--card)" stroke="var(--border2)"/>
+  <text x="590" y="216" text-anchor="middle" fill="var(--tx2)" font-size="12" font-weight="600">Coverage tracker</text>
+  <text x="590" y="232" text-anchor="middle" fill="var(--tx3)" font-size="10">юу тестлэгдсэн</text>
+
+  <!-- compose with Relay -->
+  <rect x="720" y="86" width="160" height="72" rx="11" fill="var(--acc-bg)" stroke="var(--acc)"/>
+  <text x="800" y="112" text-anchor="middle" fill="var(--acc)" font-size="13" font-weight="700">Tatar Relay</text>
+  <text x="800" y="130" text-anchor="middle" fill="var(--tx3)" font-size="10">encrypt/re-sign</text>
+  <text x="800" y="146" text-anchor="middle" fill="var(--tx3)" font-size="10">→ API руу</text>
+
+  <path d="M160 106 L192 106" stroke="#7a8496" stroke-width="1.4" marker-end="url(#ar)"/>
+  <path d="M462 100 L500 90" stroke="#7a8496" stroke-width="1.3" marker-end="url(#ar)"/>
+  <path d="M462 140 L500 152" stroke="#7a8496" stroke-width="1.3" marker-end="url(#ar)"/>
+  <path d="M462 175 L500 210" stroke="#7a8496" stroke-width="1.3" marker-end="url(#ar)"/>
+  <path d="M680 118 L720 122" stroke="var(--acc)" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+  <!-- operator input -->
+  <rect x="192" y="238" width="270" height="46" rx="10" fill="var(--card)" stroke="var(--border2)"/>
+  <text x="327" y="259" text-anchor="middle" fill="var(--tx2)" font-size="11.5">Оператор: “ийм функц/хамаарал байна”</text>
+  <text x="327" y="275" text-anchor="middle" fill="var(--tx3)" font-size="10.5">functions.yaml (гар/хагас-авто)</text>
+  <path d="M327 238 L327 210" stroke="var(--eng)" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+</svg>
+<figcaption id="fig-dataflow">Flow = “юуг тестлэх вэ” (бизнес дугтуй) · Relay = “хэрхэн харилцах вэ” (крипто дугтуй) — цуг зохицдог</figcaption>
+</figure>
+
+<h2 id="model"><span class="n">05</span>Семантик загвар — цөм</h2>
+<p class="lead">Endpoint жагсаалт биш. Аппликешнийг ийм давхаргаар загварчилна:</p>
+<pre><span class="k">Application</span> (Digital Bank)
+ ├─ <span class="k">Services</span>      Auth · Account · Payment · Loan …
+ ├─ <span class="k">Functions</span>     fund_transfer, create_beneficiary … (endpoint-тэй 1:1 биш)
+ ├─ <span class="k">Endpoints</span>     POST /transfer/init · /confirm · GET /status/{id}
+ ├─ <span class="k">Actors</span>        User A · User B · Operator · Admin
+ ├─ <span class="k">Objects</span>       Account · Beneficiary · Transfer
+ ├─ <span class="k">Variables</span>     token, account_id, txnId, otp  (гарал үүсэлтэй)
+ ├─ <span class="k">States</span>        INIT → PENDING → CONFIRMED → COMPLETED
+ └─ <span class="k">Workflows</span>     login → accounts → beneficiary → transfer → confirm</pre>
+
+<h3>Функцийн бүртгэл (оператор өгнө)</h3>
+<pre><span class="c"># functions.yaml — банкны doc эсвэл reverse-ээс гаргаж ирсэн мэдлэг</span>
+- name: fund_transfer
+  endpoints: [<span class="s">"POST /api/v1/transfer/init"</span>, <span class="s">"POST /api/v1/transfer/confirm"</span>]
+  reads:    [amount, fromAccount, toAccount, channelId]
+  calls:    [limit-check, fee-calc, risk-engine]
+  depends_on: [login, accounts_list, beneficiary_list]
+  states:   [INIT, PENDING, CONFIRMED]
+  produces: [txnId]
+  logic:    <span class="s">"channelId=MOBILE ба amount>1M бол OTP шаардана"</span></pre>
+
+<h3>Хувьсагчийн холбоос (context binding)</h3>
+<pre><span class="c"># өмнөх response-оос автоматаар авч дараагийн request-д оруулна</span>
+transfer/init  → <span class="v">response.transfer.id</span>  ⇒  <span class="k">{{txnId}}</span>
+transfer/confirm  body: { <span class="s">"txnId"</span>: <span class="k">{{txnId}}</span>, <span class="s">"otp"</span>: <span class="k">{{otp_token}}</span> }
+<span class="c"># хувьсагч юуг төлөөлж байгааг мэднэ:  account.owner=User A, transfer.dest=Beneficiary B</span></pre>
+
+<h2 id="mutations"><span class="n">06</span>Business-logic mutation каталог</h2>
+<p class="lead">Функц + контекст бэлэн болмогц Flow эдгээр туршилтыг зохион байгуулалттай үүсгэнэ (автоматаар довтлохгүй — санал болгож, оператор баталгаажуулна):</p>
+<table>
+  <thead><tr><th>Mutation</th><th>Юуг илрүүлдэг</th><th>Жишээ</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag t1">Actor swap</span></td><td>BOLA / IDOR</td><td>User B токеноор User A-гийн Transfer-т хандах</td></tr>
+    <tr><td><span class="tag t1">Object ID swap</span></td><td>Object-level authz</td><td><code>sourceAccountId</code>-г өөрийн бус данс болгох</td></tr>
+    <tr><td><span class="tag t2">Step reorder / skip</span></td><td>Workflow bypass</td><td>init-гүйгээр шууд confirm; OTP алгасах</td></tr>
+    <tr><td><span class="tag t2">Replay / duplicate</span></td><td>Idempotency алдаа</td><td>confirm-ийг 2 удаа; хуучин токен дахин</td></tr>
+    <tr><td><span class="tag t3">Value tamper</span></td><td>Business rule bypass</td><td><code>amount=-100</code>, валют зөрүү, лимит давах</td></tr>
+    <tr><td><span class="tag t3">Function confusion</span></td><td>Param confusion</td><td><code>productCode=LOAN→SAVING</code> → fee-calc өөр хариу</td></tr>
+  </tbody>
+</table>
+
+<h3>Актор × Функц матриц (authz coverage)</h3>
+<pre>              View   Edit   Pay   Transfer
+  User A        ✓      ✓      ✓       ✓
+  User B        ✓      ✓      ✓       ✓
+  Operator      ✓      ?      ?       ?      <span class="c"># ← эндээс шалгах</span>
+  Admin         ✓      ✓      ✓       ?</pre>
+
+<h2 id="output"><span class="n">07</span>Гаралтын жишээ</h2>
+<p class="lead">MVP-ийн 4 дэх алхам (baseline ↔ mutated diff) оператор дээр ингэж харагдана. Контекст сангаас <code>{{txnId}}</code>, <code>{{otp_token}}</code> автоматаар дүүрч, mutation зөвхөн НЭГ хувьсагчийг л сольж байгааг харуул:</p>
+<pre><span class="c"># Tatar Flow — fund_transfer · baseline → mutation → diff</span>
+
+<span class="v">[baseline]</span> <span class="c"># контекст сангаас дүүрсэн · actor: User A · state: PENDING</span>
+    POST /api/v1/transfer/confirm
+    { <span class="s">"txnId"</span>: <span class="s">"TXN-88421"</span>,   <span class="c">← {{txnId}}      transfer/init · response.transfer.id</span>
+      <span class="s">"otp"</span>:   <span class="s">"492013"</span>,      <span class="c">← {{otp_token}}  OTP sms hook</span>
+      <span class="s">"productCode"</span>: <span class="s">"SAVING"</span> }
+    ⇒ <span class="k">200 OK</span> · 412 B · fee=1500 · state=CONFIRMED
+
+<span class="v">[mutation: Actor swap]</span> <span class="c"># User B-ийн токен, User A-гийн объект — бусад бүх зүйл ижил</span>
+    POST /api/v1/transfer/confirm
+    { <span class="s">"txnId"</span>: <span class="s">"TXN-88421"</span>,   <span class="c">← User A-гийн Transfer (солиогүй)</span>
+      <span class="s">"otp"</span>:   <span class="s">"492013"</span>,
+      <span class="s">"productCode"</span>: <span class="s">"SAVING"</span> }
+    ⇒ <span class="k">200 OK</span> · 412 B · fee=1500 · state=CONFIRMED   <span class="c"># ← 403 БАЙХ ЁСТОЙ</span>
+
+<span class="v">[diff]</span> baseline ↔ mutated
+    status        200  →  200     <span class="c">⚠ ялгаагүй</span>
+    body length   412  →  412     <span class="c">⚠ ялгаагүй</span>
+    actor      User A  →  User B  <span class="c">← цорын ганц өөрчлөлт</span>
+    объект     User A-гийн Transfer (хоёуланд ижил)
+
+    ⇒ <span class="k">BOLA</span>: өөр актор өөр хүний Transfer-ийг батлав. Объектын эрх шалгагдаагүй.
+    coverage: fund_transfer/confirm · actor-swap ✓ · object-swap ✗ · step-skip ✗ · replay ✗</pre>
+<p class="muted">Хоёр хариулт бит-тэн адил байх нь дүгнэлтийн гол шалгуур: mutation НЭГ л хувьсагчийг сольсон бол ялгаагүй 200 гэдэг нь эрхийн шалгалт байхгүйг харуулна. Сүүлийн <code>coverage</code> мөр нь §04-ийн Coverage tracker — “fund_transfer дээр юу тестлэгдсэн, юу үлдсэн”.</p>
+
+<h2 id="mvp"><span class="n">08</span>MVP — хамгийн өндөр ROI</h2>
+<ol class="mvp">
+  <li>Burp history / HAR импортлох (mitmproxy эсвэл Burp extension).</li>
+  <li>Request-ийг бизнес функцэд гараар/хагас-автоматаар оноох → <code>functions.yaml</code>.</li>
+  <li>Response-оос хувьсагч гаргаж авах → контекст сан → дараагийн request-д авто inject.</li>
+  <li>Baseline ↔ mutated request-ийг харьцуулах (diff) — §07-ийн гаралт.</li>
+  <li>(Дараа нь) Ollama: request→функц ангилах, mutation санал болгох, ялгааг Монголоор тайлбарлах.</li>
+</ol>
+<p class="muted">Эхний 4 нь ажиллачихвал өөрөө хэрэгтэй болно. Signing (HMAC/checksum) ба session-ийг эхэндээ гарын үсэггүй endpoint дээр орхиод дараа Relay-тэй холбож шийднэ.</p>
+
+<h2 id="roadmap"><span class="n">09</span>Замын зураг</h2>
+<div class="road">
+  <div class="ph"><div class="t">v0.1</div><div class="h">Function workspace</div><p>import + функц оноох + context + diff.</p></div>
+  <div class="ph"><div class="t">v0.2</div><div class="h">Workflow/State</div><p>sequence, variable extract, prerequisite.</p></div>
+  <div class="ph"><div class="t">v0.3</div><div class="h">Test intents</div><p>actor/object swap, replay, boundary.</p></div>
+  <div class="ph"><div class="t">v0.4</div><div class="h">Assisted (Ollama)</div><p>ангилал, санал, тайлбар.</p></div>
+  <div class="ph"><div class="t">v1.0</div><div class="h">Engagement</div><p>coverage, evidence, finding draft.</p></div>
+</div>
+
+<h2 id="ecosystem"><span class="n">10</span>Экосистем ба анхааруулга</h2>
+<p class="lead">Tatar багана бүр “чамд X бэлэн байна → хаанаас эхлэх/юунд анхаарах вэ” гэсэн нэг хэв маягтай:</p>
+<pre>Triage  → Logs байна      → юу харах вэ
+Kuber   → Findings байна   → юунд итгэх вэ
+Path    → Paths байна      → алинаас эхлэх вэ
+<span class="k">Flow    → Requests байна   → ямар функцийг ямар контекстээр тестлэх вэ</span>
+Relay   → Protocol         → хэрхэн харилцах вэ</pre>
+<div class="callout">
+  <p style="margin:0"><b>Анхааруулга.</b> Tatar Flow-г автомат exploit scanner болгож болохгүй. Үнэ цэнэ нь: <b>ойлгох → загварчлах → төлөв зохион байгуулах → valid test context үүсгэх → coverage хянах → хүн баталгаажуулах</b>. “100 payload авто-exploit” болговол ердийн scanner-ууд руу орж, өвөрмөц чанараа алдана. Тестлэх хүрээ нь зөвхөн бичгээр зөвшөөрөгдсөн engagement.</p>
+</div>
+</main>
+
+<footer>
+  Tatar Flow · дизайн ноорог r1 · PSSA · хэлэлцэн хурцлах ноорог.
+</footer>
+</div>
+<script>
+  (function(){
+    var b=document.getElementById('tt'),r=document.documentElement;
+    function eff(){var t=r.getAttribute('data-theme');if(t==='dark'||t==='light')return t;
+      return window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}
+    function sync(){b.setAttribute('aria-pressed',eff()==='dark'?'true':'false');}
+    sync();
+    b.addEventListener('click',function(){
+      var next=eff()==='dark'?'light':'dark';
+      r.setAttribute('data-theme',next);
+      try{localStorage.setItem('tatar-theme',next)}catch(e){}
+      sync();
+    });
+  })();
+</script>
+</body>
+</html>
